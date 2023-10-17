@@ -5,6 +5,14 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <h1>Welcome to our Movie Store</h1>
+        <h3>Make your selection below</h3>
+        <form action="/MoviesApp/movie.do" method="post">
+            <select name="action" id="action">
+                <option value="browse">Browse Movies</option>
+                <option value="add">Add movie</option>
+            </select>
+            <button type="submit">Send</button>
+        </form>
     </body>
 </html>
