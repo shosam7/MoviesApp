@@ -4,6 +4,7 @@
  */
 package com.mycompany.moviesapp.controllers;
 
+import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -46,7 +47,16 @@ public class MovieController extends HttpServlet {
         //System.out.println(action);
 
         if (action.equalsIgnoreCase("browse")) {
-            response.sendRedirect("");
+            response.sendRedirect("search.html");
+        } else if (action.equalsIgnoreCase("search")) {
+            //System.out.println("Inside search");
+            String keyword = request.getParameter("keyword");
+            String searchBy = request.getParameter("search-by");
+            System.out.println(searchBy);
+            request.setAttribute("keyword", keyword);
+            request.setAttribute("search_by", searchBy);
+            RequestDispatcher rd = request.getRequestDispatcher("result.jsp");
+            rd.forward(request, response);
         } else if (action.equalsIgnoreCase("add")) {
             response.sendRedirect("add-movie.jsp");
         } else if (action.equalsIgnoreCase("new")) {
@@ -72,6 +82,7 @@ public class MovieController extends HttpServlet {
                 preparedStatement.setString(4, genre);
                 preparedStatement.setString(5, year);
                 int affectedRows = preparedStatement.executeUpdate();
+                response.sendRedirect("add-success.html");
 //                StringBuilder sql;
 //                sql = new StringBuilder("INSERT INTO moviedb").append(" (");
 //                StringBuilder values;
@@ -134,6 +145,7 @@ public class MovieController extends HttpServlet {
                         connection.close();
                     }
                     out.close();
+                    System.out.println("All connections closed");
                 } catch (SQLException e) {
                     out.println("SQL Error during closing connections" + e);
                 }
