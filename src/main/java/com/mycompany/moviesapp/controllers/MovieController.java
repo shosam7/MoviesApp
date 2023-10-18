@@ -109,7 +109,6 @@ public class MovieController extends HttpServlet {
         } else if (action.equalsIgnoreCase("new")) {
             PrintWriter out = response.getWriter();
             Connection connection = null;
-            ResultSet rs = null;
             Statement stmt = null;
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
