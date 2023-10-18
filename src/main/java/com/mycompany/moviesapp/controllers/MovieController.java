@@ -4,6 +4,7 @@
  */
 package com.mycompany.moviesapp.controllers;
 
+import com.mycompany.moviesapp.pojo.Movie;
 import jakarta.servlet.RequestDispatcher;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
@@ -18,10 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -49,14 +48,62 @@ public class MovieController extends HttpServlet {
         if (action.equalsIgnoreCase("browse")) {
             response.sendRedirect("search.html");
         } else if (action.equalsIgnoreCase("search")) {
-            //System.out.println("Inside search");
-            String keyword = request.getParameter("keyword");
-            String searchBy = request.getParameter("search-by");
-            System.out.println(searchBy);
-            request.setAttribute("keyword", keyword);
-            request.setAttribute("search_by", searchBy);
-            RequestDispatcher rd = request.getRequestDispatcher("result.jsp");
-            rd.forward(request, response);
+            PrintWriter out = response.getWriter();
+            Connection connection = null;
+            ResultSet rs = null;
+            Statement stmt = null;
+            try {
+                //System.out.println("Inside search");
+                String keyword = request.getParameter("keyword");
+                String searchBy = request.getParameter("search-by");
+                System.out.println(searchBy);
+                request.setAttribute("keyword", keyword);
+                request.setAttribute("search_by", searchBy);
+
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                connection = DriverManager.getConnection("jdbc:mysql://localhost/moviedb", "root", "12345678");
+                stmt = connection.createStatement();
+                StringBuilder sql = new StringBuilder("SELECT * from movies where ");
+                sql.append(searchBy);
+                sql.append(" = ");
+                sql.append("'");
+                sql.append(keyword);
+                sql.append("'");
+                sql.append(";");
+                System.out.println(sql);
+                rs = stmt.executeQuery(sql.toString());
+                List<Movie> movieList = new ArrayList<Movie>();
+                while (rs.next()) {
+                    Movie movie = new Movie();
+                    movie.setTitle(rs.getString("title"));
+                    movie.setActor(rs.getString("actor"));
+                    movie.setActress(rs.getString("actress"));
+                    movie.setGenre(rs.getString("genre"));
+                    movie.setYear(rs.getInt("year"));
+                    movieList.add(movie);
+                }
+                request.setAttribute("movies", movieList);
+                RequestDispatcher rd = request.getRequestDispatcher("result.jsp");
+                rd.forward(request, response);
+            } catch (SQLException ex) {
+                out.println("SQL Error " + ex);
+            } catch (ClassNotFoundException ex) {
+                //Logger.getLogger(MovieController.class.getName()).log(Level.SEVERE, null, ex);
+                out.println("JDBC Class Error" + ex);
+            } finally {
+                try {
+                    if (stmt != null) {
+                        stmt.close();
+                    }
+                    if (connection != null) {
+                        connection.close();
+                    }
+                    out.close();
+                    System.out.println("All connections closed in search");
+                } catch (SQLException e) {
+                    out.println("SQL Error during closing connections in search" + e);
+                }
+            }
         } else if (action.equalsIgnoreCase("add")) {
             response.sendRedirect("add-movie.jsp");
         } else if (action.equalsIgnoreCase("new")) {
@@ -83,54 +130,6 @@ public class MovieController extends HttpServlet {
                 preparedStatement.setString(5, year);
                 int affectedRows = preparedStatement.executeUpdate();
                 response.sendRedirect("add-success.html");
-//                StringBuilder sql;
-//                sql = new StringBuilder("INSERT INTO moviedb").append(" (");
-//                StringBuilder values;
-//                values = new StringBuilder("(");
-//                rs = stmt.executeQuery("SELECT * FROM TABLE");
-//                Map<String, String[]> movie = request.getParameterMap();
-//                for (Map.Entry<String, String[]> entry : movie.entrySet()) {
-//                    sql.append(entry.getKey());
-//                    values.append(entry.getValue()[0]);
-//                }
-//                Map<String, String[]> movie = request.getParameterMap();
-//                //movie.remove("action");
-//                StringBuilder sql = new StringBuilder("INSERT INTO movies").append(" (");
-//                StringBuilder placeholders = new StringBuilder();
-//
-//                for (Iterator<String> iter = movie.keySet().iterator(); iter.hasNext();) {
-//                    String param = iter.next();
-//                    if (param.equalsIgnoreCase("action")) {
-//                        continue;
-//                    }
-//                    sql.append(param);
-//                    placeholders.append("?");
-//
-//                    if (iter.hasNext()) {
-//                        sql.append(",");
-//                        placeholders.append(",");
-//                    }
-//                }
-//
-//                sql.append(") VALUES (").append(placeholders).append(")");
-//                System.out.println(sql);
-//                PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-//                System.out.println(preparedStatement);
-//                int i = 0;
-//                int count = 0;
-//                System.out.println(movie.values().size());
-//                for (String[] value : movie.values()) {
-//                    if (value[0].equalsIgnoreCase("new")) {
-//                        System.out.println(value[0] + " Skipped");
-//                        continue;
-//                    }
-//                    count++;
-//                    System.out.println(count);
-//                    preparedStatement.setString(i++, value[0]);
-//                }
-//                System.out.println(i);
-//                int affectedRows = preparedStatement.executeUpdate();
-//                System.out.println("Number of affected rows: " + affectedRows);
             } catch (SQLException ex) {
                 out.println("SQL Error " + ex);
             } catch (ClassNotFoundException ex) {
