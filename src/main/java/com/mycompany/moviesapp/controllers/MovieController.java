@@ -114,19 +114,28 @@ public class MovieController extends HttpServlet {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 connection = DriverManager.getConnection("jdbc:mysql://localhost/moviedb", "root", "12345678");
                 stmt = connection.createStatement();
+                
                 String title = request.getParameter("title");
                 String actor = request.getParameter("actor");
                 String actress = request.getParameter("actress");
                 String genre = request.getParameter("genre");
                 String year = request.getParameter("year");
+                Movie movie = new Movie();
+                movie.setTitle(title);
+                movie.setActor(actor);
+                movie.setActress(actress);
+                movie.setGenre(genre);
+                int yearInt = Integer.parseInt(year);
+                movie.setYear(yearInt);
+                
                 String sql = "INSERT INTO movies (title,actor,actress,genre,year) VALUES (?,?,?,?,?)";
                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
                 System.out.println(preparedStatement);
-                preparedStatement.setString(1, title);
-                preparedStatement.setString(2, actor);
-                preparedStatement.setString(3, actress);
-                preparedStatement.setString(4, genre);
-                preparedStatement.setString(5, year);
+                preparedStatement.setString(1, movie.getTitle());
+                preparedStatement.setString(2, movie.getActor());
+                preparedStatement.setString(3, movie.getActress());
+                preparedStatement.setString(4, movie.getGenre());
+                preparedStatement.setInt(5, yearInt);
                 int affectedRows = preparedStatement.executeUpdate();
                 response.sendRedirect("add-success.html");
             } catch (SQLException ex) {
